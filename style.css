@@ -2,17 +2,17 @@
    TOKENS
    ========================================================== */
 :root{
-  --ivory:#F4F0E6;
-  --parchment:#EAE2D0;
-  --forest:#223326;
-  --forest-dark:#141F17;
+  --ivory:#F8F3EA;
+  --parchment:#EEE1C9;
+  --forest:#5A4632;
+  --forest-dark:#241C12;
   --gold:#B08D57;
   --gold-light:#D8C39B;
-  --navy:#1B2436;
+  --navy:#8A7355;
   --bordeaux:#6E2B3A;
   --ink:#26251F;
-  --line: rgba(34,51,38,0.22);
-  --line-strong: rgba(34,51,38,0.4);
+  --line: rgba(90,70,50,0.22);
+  --line-strong: rgba(90,70,50,0.4);
 
   --display: 'Cormorant Garamond', serif;
   --crest: 'Cinzel', serif;
@@ -116,7 +116,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   position:fixed; top:0; left:0; right:0; z-index:100;
   display:flex; align-items:center; justify-content:space-between;
   padding:18px 32px;
-  background:rgba(244,240,230,0.9);
+  background:rgba(248,243,234,0.9);
   backdrop-filter:blur(6px);
   border-bottom:1px solid var(--line);
 }
@@ -160,12 +160,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .hero-frame{position:absolute; inset:0;}
 .hero-photo{
   position:absolute; inset:0;
-  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, #2b3d2c 0%, #141f17 75%);
+  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, #4A3B28 0%, #241C12 75%);
   /* EDIT: swap in your own photo — background-image:url('images/hero.jpg'); background-size:cover; background-position:center; */
 }
 .hero-photo::after{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(20,31,23,0.35) 0%, rgba(20,31,23,0.55) 60%, rgba(20,31,23,0.85) 100%);
+  background:linear-gradient(180deg, rgba(36,28,18,0.35) 0%, rgba(36,28,18,0.55) 60%, rgba(36,28,18,0.85) 100%);
 }
 .hero-photo-fallback{
   position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -186,16 +186,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hero-names .amp{color:var(--gold);}
 .hero-date{font-family:var(--crest); font-size:13px; letter-spacing:0.18em; text-transform:uppercase; margin:0 0 6px; color:var(--gold-light);}
-.hero-place{font-size:17px; color:rgba(244,240,230,0.75); margin:0 0 30px;}
+.hero-place{font-size:17px; color:rgba(248,243,234,0.75); margin:0 0 30px;}
 .hero-scroll{border-color:var(--gold-light); color:var(--ivory);}
 .hero-scroll:hover{background:var(--gold-light); color:var(--forest-dark); border-color:var(--gold-light);}
 
 .scroll-cue{
   position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
-  z-index:2; color:rgba(244,240,230,0.6); font-family:var(--crest); font-size:10px; letter-spacing:0.2em; text-transform:uppercase;
+  z-index:2; color:rgba(248,243,234,0.6); font-family:var(--crest); font-size:10px; letter-spacing:0.2em; text-transform:uppercase;
   display:flex; flex-direction:column; align-items:center; gap:8px;
 }
-.scroll-cue span{width:1px; height:34px; background:rgba(244,240,230,0.5); animation:scrollcue 2s ease-in-out infinite;}
+.scroll-cue span{width:1px; height:34px; background:rgba(248,243,234,0.5); animation:scrollcue 2s ease-in-out infinite;}
 @keyframes scrollcue{0%{transform:scaleY(0.3); opacity:0.3;} 50%{transform:scaleY(1); opacity:1;} 100%{transform:scaleY(0.3); opacity:0.3;}}
 
 /* ==========================================================
@@ -207,7 +207,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .countdown{display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; margin-top:34px;}
 .countdown-unit{display:flex; flex-direction:column; align-items:center; min-width:80px;}
 .countdown-num{font-family:var(--display); font-size:clamp(40px,6vw,64px); color:var(--gold-light); line-height:1;}
-.countdown-label{font-family:var(--crest); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; margin-top:8px; color:rgba(244,240,230,0.7);}
+.countdown-label{font-family:var(--crest); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; margin-top:8px; color:rgba(248,243,234,0.7);}
 .countdown-divider{font-size:32px; color:var(--gold); opacity:0.6;}
 
 /* ==========================================================
@@ -254,6 +254,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .entourage-parents{display:flex; justify-content:center; gap:80px; margin-bottom:56px; flex-wrap:wrap; text-align:center;}
 .entourage-parents h4{font-family:var(--crest); font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin:0 0 8px;}
 .entourage-parents p{margin:0; font-size:19px;}
+.in-memory{font-style:italic; font-size:14px; color:var(--gold); display:inline-block; margin-top:2px;}
 
 .entourage-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:36px 28px;}
 .entourage-role{text-align:center; border-top:1px solid var(--line); padding-top:20px;}
@@ -326,7 +327,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .slideshow-empty{color:#8a8a78; font-style:italic; margin-top:20px;}
 
 .lightbox{
-  position:fixed; inset:0; background:rgba(20,31,23,0.92); z-index:200;
+  position:fixed; inset:0; background:rgba(36,28,18,0.92); z-index:200;
   display:flex; align-items:center; justify-content:center; padding:40px;
 }
 .lightbox[hidden]{display:none;}
@@ -393,7 +394,7 @@ fieldset legend{font-family:var(--crest); font-size:11px; letter-spacing:0.1em; 
 .footer-crest .brand-initials{fill:var(--gold-light);}
 .footer-names{font-family:var(--display); font-style:italic; font-size:28px; margin:0 0 6px;}
 .footer-date{font-family:var(--crest); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-light); margin:0 0 20px;}
-.footer-note{color:rgba(244,240,230,0.65); font-size:15px; margin:0;}
+.footer-note{color:rgba(248,243,234,0.65); font-size:15px; margin:0;}
 
 /* ==========================================================
    SCROLL REVEAL
