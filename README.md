@@ -1,4 +1,4 @@
-# Isabela & Rafael — Wedding Invitation Website
+# Michelle & Jose — Wedding Invitation Website
 
 A single-page wedding invitation site: hero, countdown, ceremony & reception
 details, timeline, entourage, principal sponsors, invitation message, love
@@ -30,8 +30,11 @@ Key things to change:
 
 ## 2. Add your own photos
 
-Put your images in the `images/` folder, then:
-- **Hero photo**: in `style.css`, find `.hero-photo` and uncomment/add
+Right now the hero background is a **sample illustration** (`images/hero-sample.svg`) — a
+simple line-art couple/arch graphic standing in for a real photo, so the page isn't just a
+plain dark rectangle out of the box. Swap it for your actual photo whenever you're ready:
+- **Hero photo**: put your image in `images/` (e.g. `hero.jpg`), then in `style.css` find
+  `.hero-photo` and replace the `background:` line with
   `background-image:url('images/hero.jpg'); background-size:cover; background-position:center;`
 - **Gallery**: in `index.html`, find `#galleryGrid` and replace each
   `<div class="gallery-placeholder">Photo N</div>` with

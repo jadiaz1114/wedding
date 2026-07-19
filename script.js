@@ -1,5 +1,5 @@
 // ============================================================
-// Isabela & Rafael — Wedding Invitation
+// Michelle & Jose — Wedding Invitation
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
