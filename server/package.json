@@ -1,0 +1,20 @@
+{
+  "name": "wedding-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal RSVP and guest-wishes API for the wedding invitation site",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0"
+  }
+}

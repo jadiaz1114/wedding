@@ -1,0 +1,8 @@
+# Backend
+server/node_modules/
+server/data/*
+!server/data/.gitkeep
+server/.env
+
+# OS
+.DS_Store

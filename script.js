@@ -11,7 +11,28 @@ document.addEventListener('DOMContentLoaded', () => {
   initWishWall();
   initRsvp();
   initCopyButtons();
+  initBackgroundMusic();
 });
+
+/* ---------------- BACKGROUND MUSIC ---------------- */
+function initBackgroundMusic(){
+  const audio = document.getElementById('bgm');
+  if (!audio) return;
+
+  audio.play().catch(() => {
+    // Autoplay blocked — start on the user's first interaction instead.
+    const start = () => {
+      audio.muted = false;
+      audio.play();
+      document.removeEventListener('click', start);
+      document.removeEventListener('touchstart', start);
+      document.removeEventListener('keydown', start);
+    };
+    document.addEventListener('click', start);
+    document.addEventListener('touchstart', start);
+    document.addEventListener('keydown', start);
+  });
+}
 
 /* ---------------- NAV ---------------- */
 function initNav(){
@@ -218,18 +239,42 @@ function initSlideshowBooth(){
 }
 
 /* ---------------- LOVE MESSAGES WALL ----------------
-   Submissions POST to Netlify Forms (visible in your Netlify
-   dashboard once deployed) AND are added to the wall on this
-   visitor's screen immediately for a nice live feel. The wall
-   itself is per-browser — to permanently feature messages for
-   everyone, copy them from your Netlify dashboard into the
-   seed cards in index.html (#wishWall). See README.md.
+   Submissions POST as JSON to the self-hosted API (server/server.js,
+   proxied at /api/wishes by Nginx) and are stored in SQLite. On load,
+   recent messages are fetched from the API and shown above the seed
+   cards in index.html, so the wall is shared across every visitor.
+   See README.md for deployment details.
 --------------------------------------------------------- */
 function initWishWall(){
   const form = document.getElementById('wishForm');
   const wall = document.getElementById('wishWall');
   const status = document.getElementById('wishStatus');
   if (!form) return;
+
+  function addCard(name, message, prepend){
+    const card = document.createElement('div');
+    card.className = 'wish-card';
+    const p = document.createElement('p');
+    p.textContent = '\u201C' + message + '\u201D';
+    const span = document.createElement('span');
+    span.textContent = '\u2014 ' + name;
+    card.appendChild(p);
+    card.appendChild(span);
+    if (prepend) wall.prepend(card); else wall.appendChild(card);
+  }
+
+  async function loadWishes(){
+    try {
+      const res = await fetch('/api/wishes?limit=20');
+      if (!res.ok) return;
+      const wishes = await res.json();
+      // Server returns newest-first; insert in reverse so the most
+      // recent message ends up at the very top of the wall.
+      [...wishes].reverse().forEach(w => addCard(w.name, w.message, true));
+    } catch (err) {
+      // Backend may not be running (e.g. local file preview) -- fine to skip
+    }
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -240,37 +285,39 @@ function initWishWall(){
     status.textContent = 'Sending...';
 
     try {
-      await fetch('/', {
+      const res = await fetch('/api/wishes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(new FormData(form)).toString()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          message,
+          'bot-field': form.elements['bot-field'].value
+        })
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Request failed');
+      }
     } catch (err) {
-      // Netlify Forms only works once deployed; fine to ignore locally
+      status.textContent = "Sorry, we couldn't send that just now. Please try again.";
+      return;
     }
 
-    const card = document.createElement('div');
-    card.className = 'wish-card';
-    const p = document.createElement('p');
-    p.textContent = '\u201C' + message + '\u201D';
-    const span = document.createElement('span');
-    span.textContent = '\u2014 ' + name;
-    card.appendChild(p);
-    card.appendChild(span);
-    wall.prepend(card);
-
+    addCard(name, message, true);
     form.reset();
     status.textContent = 'Thank you for your message!';
     setTimeout(() => status.textContent = '', 4000);
   });
+
+  loadWishes();
 }
 
 /* ---------------- RSVP + GUEST TRACKING ----------------
-   Submissions POST to Netlify Forms — once deployed, view all
-   responses (name, attending, guest count, meal) in your
-   Netlify site dashboard under Forms, or export as CSV. A
-   confirmation is also remembered on this device so returning
-   guests can see they already responded.
+   Submissions POST as JSON to the self-hosted API (server/server.js,
+   proxied at /api/rsvp by Nginx) and are stored in SQLite. The couple
+   can export all responses as CSV via the admin endpoint documented
+   in README.md. A confirmation is also remembered on this device so
+   returning guests can see they already responded.
 --------------------------------------------------------- */
 function initRsvp(){
   const form = document.getElementById('rsvpForm');
@@ -284,7 +331,7 @@ function initRsvp(){
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       if (saved){
-        trackerBody.textContent = saved.name + ' — ' + saved.attending + ' (' + saved.guests + ' guest' + (saved.guests === '1' ? '' : 's') + ')';
+        trackerBody.textContent = saved.name + ' \u2014 ' + saved.attending;
       }
     } catch(e){ /* noop */ }
   }
@@ -295,29 +342,33 @@ function initRsvp(){
     const data = new FormData(form);
     const record = {
       name: data.get('name'),
-      email: data.get('email'),
       attending: data.get('attending'),
-      guests: data.get('guests'),
       meal: data.get('meal'),
       note: data.get('note'),
+      'bot-field': data.get('bot-field'),
       submittedAt: new Date().toISOString()
     };
     if (!record.name || !record.attending) return;
 
     status.textContent = 'Sending...';
     try {
-      await fetch('/', {
+      const res = await fetch('/api/rsvp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(data).toString()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Request failed');
+      }
     } catch (err) {
-      // Netlify Forms only works once deployed; fine to ignore locally
+      status.textContent = "Sorry, we couldn't send that just now. Please try again.";
+      return;
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
     renderTracker();
-    status.textContent = 'Thank you — your RSVP has been received!';
+    status.textContent = 'Thank you \u2014 your RSVP has been received!';
     form.reset();
   });
 }
