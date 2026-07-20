@@ -8,8 +8,8 @@
   --forest-dark:#241C12;
   --gold:#B08D57;
   --gold-light:#D8C39B;
-  --navy:#8A7355;
-  --bordeaux:#6E2B3A;
+  --bordeaux:#A0522D;
+  --rustic-brown-light:#6B4A32;
   --ink:#26251F;
   --line: rgba(90,70,50,0.22);
   --line-strong: rgba(90,70,50,0.4);
@@ -167,7 +167,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .hero-frame{position:absolute; inset:0;}
 .hero-photo{
   position:absolute; inset:0;
-  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, #4A3B28 0%, #241C12 75%);
+  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, var(--rustic-brown-light) 0%, var(--forest-dark) 75%);
   /* EDIT: swap in your own photo — background-image:url('images/hero.jpg'); background-size:cover; background-position:center; */
 }
 .hero-photo::after{
