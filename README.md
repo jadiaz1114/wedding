@@ -97,18 +97,52 @@ To read RSVPs, either:
 
 # Part B — Deploy on an Ubuntu VM
 
-This deploys the static site behind Nginx (with TLS + security headers) and
-runs the API as a systemd service on `127.0.0.1:3000`, reachable only
-through Nginx at `/api/*`.
+This deploys the static site behind Nginx (with security headers, and TLS
+once you add a domain) and runs the API as a systemd service on
+`127.0.0.1:3000`, reachable only through Nginx at `/api/*`.
 
-Tested against Ubuntu 22.04/24.04. You'll need: a VM with a public IP, a
-domain name pointed at that IP (an A record), and `sudo` access.
+Tested against Ubuntu 22.04/24.04. You'll need: a VM with a public IP and
+`sudo` access. A domain name is **not required** to get the site running —
+steps 2–8 below get you a working site at `http://your-vm-ip` over plain
+HTTP. Domain + HTTPS (step 9) is an optional step you can come back to
+later once you actually have a domain to point at it.
 
-## 1. Point your domain at the VM
+## 0. Get a static IP (do this first)
 
-In your domain's DNS settings, add an A record (and optionally a `www` CNAME
-or second A record) pointing at the VM's public IP. Wait for it to
-propagate (`dig yourdomain.com`) before requesting a TLS certificate later.
+Most cloud VMs are given a **dynamic** public IP by default — it can
+change on reboot or stop/start, which would silently break the link
+you've shared with guests (and any domain's A record later). Before
+going further, reserve/allocate a static IP from your provider and
+attach it to this VM. This is a control-panel/CLI action on the
+provider's side — nothing to configure on the VM itself, since Nginx
+already answers requests for any IP (`server_name _;`).
+
+Quick pointers by provider (all free or ~$1–5/mo while attached to a
+running instance — some charge a small fee only when the IP is
+*unattached*):
+
+- **AWS**: EC2 console → Elastic IPs → Allocate → Associate with your
+  instance (`aws ec2 allocate-address` / `associate-address` via CLI).
+- **DigitalOcean**: Networking → Reserved IPs → Reserve → Assign to
+  Droplet.
+- **Linode/Akamai**: Instance → Network → Reserved IPs → Add.
+- **Google Cloud**: VPC network → IP addresses → Reserve a static
+  external IP → Attach to the VM instance.
+- **Azure**: your VM's Networking blade → change the public IP's SKU/
+  assignment to **Static**.
+- **Vultr**: Products → Network → Reserved IPs → Allocate → Attach.
+- **Hetzner**: Server → Networking → Floating IPs → Create → Assign.
+
+Whatever the new static IP turns out to be, that's what you'll use in
+place of `your-vm-ip` throughout the rest of this guide.
+
+## 1. (Optional, can do later) Point your domain at the VM
+
+If you already have a domain, add an A record (and optionally a `www`
+CNAME or second A record) pointing at the VM's public IP now, so it has
+time to propagate (`dig yourdomain.com`) before you request a TLS
+certificate in step 9. If you don't have one yet, skip straight to step 2
+— nothing else below depends on this.
 
 ## 2. Install system packages
 
@@ -151,33 +185,50 @@ cd /var/www/wedding
 Never run the Node process as root. This user owns only the app directory.
 
 ```bash
-sudo useradd --system --home /var/www/wedding --shell /usr/sbin/nologin wedding
-sudo chown -R wedding:wedding /var/www/wedding/server
+sudo useradd --system --create-home --home-dir /var/lib/wedding --shell /usr/sbin/nologin wedding
 ```
+
+`--home-dir /var/lib/wedding` matters: it gives this account its own
+private home *outside* the web root. If it shared a home with
+`/var/www/wedding` (owned by you/root), every tool that writes dotfiles
+to `$HOME` — `npm`'s cache, `nano`'s state dir, etc. — would fail with
+`EACCES` the moment you ran it `sudo -u wedding`, because that user
+wouldn't own the directory it's trying to write into.
 
 ## 6. Install and configure the API
 
+Run these as yourself (or root) — **not** `sudo -u wedding` — since
+installing dependencies and editing `.env` are one-off admin tasks, not
+something the low-privilege runtime account needs to do:
+
 ```bash
 cd /var/www/wedding/server
-sudo -u wedding npm install --omit=dev
+npm install --omit=dev
 
-sudo -u wedding cp .env.example .env
-sudo -u wedding nano .env
+cp .env.example .env
+nano .env
 ```
 
 In `.env`, set:
 - `ADMIN_TOKEN` — generate one with `openssl rand -hex 32`; this protects
   the CSV export endpoints, so keep it secret.
-- `ALLOWED_ORIGIN` — your site's full URL, e.g. `https://yourdomain.com`
-  (rejects cross-site POSTs that don't claim to come from your own page).
+- `ALLOWED_ORIGIN` — leave this **blank** for now if you don't have a
+  domain yet (it's optional; blank just skips the check). Once you're on
+  a real domain, set it to that full URL, e.g. `https://yourdomain.com`,
+  to reject cross-site POSTs that don't claim to come from your own page.
 - Leave `HOST=127.0.0.1` and `PORT=3000` as-is unless you have a reason to
   change them.
 
-Lock down the `.env` file and the data directory (they hold your admin
-token and guests' personal info):
+The running service (as the `wedding` user) only ever needs to *read*
+`.env` and *write* to `data/` — nothing else under `server/` needs to
+change ownership, so `git pull`-based updates later keep working normally
+without permission fights. Grant just those two:
 
 ```bash
+sudo chown wedding:wedding /var/www/wedding/server/.env
 sudo chmod 600 /var/www/wedding/server/.env
+sudo mkdir -p /var/www/wedding/server/data
+sudo chown wedding:wedding /var/www/wedding/server/data
 sudo chmod 700 /var/www/wedding/server/data
 ```
 
@@ -197,25 +248,46 @@ Logs: `sudo journalctl -u wedding-api -f`
 
 ```bash
 sudo cp deploy/nginx-wedding.conf /etc/nginx/sites-available/wedding
-sudo sed -i 's/YOUR_DOMAIN/yourdomain.com/g' /etc/nginx/sites-available/wedding
 sudo ln -s /etc/nginx/sites-available/wedding /etc/nginx/sites-enabled/wedding
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-At this point `http://yourdomain.com` should already serve the site over
-plain HTTP.
+The config ships with `server_name _;` — a catch-all that matches any
+Host header — so this works immediately with no domain. Visit
+`http://your-vm-ip` (find it with `curl -4 ifconfig.me` if you're not
+sure) and confirm:
+- The page loads with styling, fonts, and the countdown ticking
+- Submitting the RSVP form and Love Messages form both succeed
+- `http://your-vm-ip/api/health` returns `{"ok":true}`
 
-## 9. Enable HTTPS (Let's Encrypt)
+**This is a fully working site already** — steps 9 onward are optional
+polish (a real domain name and a padlock icon instead of a browser
+warning), not required for guests to RSVP.
+
+## 9. (Optional) Enable a domain + HTTPS (Let's Encrypt)
+
+Only do this once you've completed step 1 (DNS pointed at this VM and
+propagated). First point Nginx at your real domain instead of the `_`
+catch-all:
+
+```bash
+sudo sed -i 's/server_name _;/server_name yourdomain.com www.yourdomain.com;/' /etc/nginx/sites-available/wedding
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Then request a certificate:
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+sudo certbot --nginx --hsts -d yourdomain.com -d www.yourdomain.com
 ```
 
 Certbot edits the Nginx config to add the certificate paths and a
-redirect from HTTP to HTTPS, and sets up automatic renewal
+redirect from HTTP to HTTPS, adds the HSTS header (`--hsts`, safe to add
+only now that HTTPS actually works), and sets up automatic renewal
 (`sudo systemctl status certbot.timer` to confirm).
 
 Visit `https://yourdomain.com` and confirm:
@@ -226,7 +298,7 @@ Visit `https://yourdomain.com` and confirm:
 ## 10. Exporting responses
 
 With `ADMIN_TOKEN` set in `.env`, download CSVs of everything guests have
-submitted:
+submitted (swap in `http://your-vm-ip` if you haven't set up a domain yet):
 
 ```
 https://yourdomain.com/api/admin/rsvps.csv?token=YOUR_ADMIN_TOKEN
@@ -241,7 +313,7 @@ Treat that URL like a password — anyone with it can read your guest list
 ```bash
 cd /var/www/wedding
 git pull
-cd server && sudo -u wedding npm install --omit=dev   # only if dependencies changed
+cd server && npm install --omit=dev   # only if dependencies changed
 sudo systemctl restart wedding-api
 ```
 
