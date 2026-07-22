@@ -89,9 +89,10 @@ This only works once the API is running — see Part B. While just opening
 send that" error, which is expected.
 
 To read RSVPs, either:
+- Visit the built-in admin dashboard at `/admin` (see **Viewing responses**
+  below), or
 - SSH into the VM and query the SQLite file directly (`sqlite3
-  server/data/wedding.db "select * from rsvps;"`), or
-- Use the built-in CSV export (see **Exporting responses** below).
+  server/data/wedding.db "select * from rsvps;"`).
 
 ---
 
@@ -295,18 +296,39 @@ Visit `https://yourdomain.com` and confirm:
 - Submitting the RSVP form and Love Messages form both succeed
 - `https://yourdomain.com/api/health` returns `{"ok":true}`
 
-## 10. Exporting responses
+## 10. Viewing responses
 
-With `ADMIN_TOKEN` set in `.env`, download CSVs of everything guests have
-submitted (swap in `http://your-vm-ip` if you haven't set up a domain yet):
+With `ADMIN_TOKEN` set in `.env`, visit `/admin` (swap in `http://your-vm-ip`
+if you haven't set up a domain yet):
+
+```
+https://yourdomain.com/admin
+```
+
+This is a dashboard — not the RSVP/wishes forms guests use — showing a
+summary (attending/declined/message counts) and full tables of every RSVP
+and Love Message, with CSV download links for each. It's not linked from
+anywhere on the public site, and the page itself holds no guest data until
+you enter the token; nobody browsing the wedding site would ever land on
+it.
+
+Paste your `ADMIN_TOKEN` into the prompt to sign in (stored only for that
+browser tab session — closing the tab signs you out). For a one-click
+bookmark instead, visit `https://yourdomain.com/admin?token=YOUR_ADMIN_TOKEN`
+once — it saves the token and immediately cleans the URL bar so the token
+doesn't linger there.
+
+Treat that token like a password — anyone with it can read your guest list
+(names, attendance, meal choices, messages). Don't post it publicly or
+commit it anywhere.
+
+Prefer raw CSV (e.g. to import into a spreadsheet) without the dashboard?
+The same endpoints it uses are available directly:
 
 ```
 https://yourdomain.com/api/admin/rsvps.csv?token=YOUR_ADMIN_TOKEN
 https://yourdomain.com/api/admin/wishes.csv?token=YOUR_ADMIN_TOKEN
 ```
-
-Treat that URL like a password — anyone with it can read your guest list
-(names, attendance, meal choices). Don't post it publicly or commit it anywhere.
 
 ## 11. Deploying updates later
 
@@ -341,7 +363,11 @@ sudo -u wedding sqlite3 /var/www/wedding/server/data/wedding.db ".backup '/var/b
   queries — never string-concatenated into SQL.
 - Guest-submitted text is inserted into the page with `textContent`, never
   `innerHTML`, so a message like `<script>...</script>` is displayed as
-  literal text rather than executed.
+  literal text rather than executed — true on both the public wish wall
+  and the `/admin` dashboard.
+- `/admin` and every `/api/admin/*` route require `ADMIN_TOKEN`, compared
+  with a constant-time check (`crypto.timingSafeEqual`) so a wrong guess
+  can't be narrowed down by response timing.
 - Security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy,
   Permissions-Policy) are set by Nginx for the whole site; Nginx also
   blocks any request for a dotfile (`.env`, `.git`, etc.).

@@ -1,0 +1,175 @@
+// ============================================================
+// Admin dashboard client script.
+//
+// This page holds no guest data by itself — it only renders what the
+// token-protected /api/admin/* endpoints return, so all guest text
+// (name, note, message) is inserted with textContent, never innerHTML.
+// ============================================================
+
+(function () {
+  const STORAGE_KEY = 'weddingAdminToken';
+
+  const loginView = document.getElementById('loginView');
+  const dashboardView = document.getElementById('dashboardView');
+  const loginForm = document.getElementById('loginForm');
+  const tokenInput = document.getElementById('tokenInput');
+  const loginError = document.getElementById('loginError');
+  const signOutBtn = document.getElementById('signOutBtn');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const summaryEl = document.getElementById('summary');
+  const rsvpBody = document.querySelector('#rsvpTable tbody');
+  const wishBody = document.querySelector('#wishTable tbody');
+  const rsvpEmpty = document.getElementById('rsvpEmpty');
+  const wishEmpty = document.getElementById('wishEmpty');
+  const rsvpCsvLink = document.getElementById('rsvpCsvLink');
+  const wishCsvLink = document.getElementById('wishCsvLink');
+
+  function getToken() {
+    return sessionStorage.getItem(STORAGE_KEY) || '';
+  }
+  function setToken(token) {
+    sessionStorage.setItem(STORAGE_KEY, token);
+  }
+  function clearToken() {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function showLogin(message) {
+    dashboardView.hidden = true;
+    signOutBtn.hidden = true;
+    loginView.hidden = false;
+    loginError.hidden = !message;
+    loginError.textContent = message || '';
+  }
+
+  function showDashboard() {
+    loginView.hidden = true;
+    dashboardView.hidden = false;
+    signOutBtn.hidden = false;
+  }
+
+  async function fetchJson(path) {
+    const res = await fetch(path, { headers: { 'x-admin-token': getToken() } });
+    if (res.status === 403 || res.status === 503) {
+      clearToken();
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Access denied.');
+    }
+    if (!res.ok) throw new Error('Something went wrong loading data.');
+    return res.json();
+  }
+
+  function cell(text) {
+    const td = document.createElement('td');
+    td.textContent = text ?? '';
+    return td;
+  }
+
+  function formatDate(value) {
+    if (!value) return '';
+    // SQLite's datetime('now') stores UTC as 'YYYY-MM-DD HH:MM:SS'.
+    const d = new Date(value.replace(' ', 'T') + 'Z');
+    return isNaN(d) ? value : d.toLocaleString();
+  }
+
+  function renderRsvps(rows) {
+    rsvpBody.textContent = '';
+    rsvpEmpty.hidden = rows.length > 0;
+    rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.appendChild(cell(row.name));
+      tr.appendChild(cell(row.attending));
+      tr.appendChild(cell(row.meal));
+      tr.appendChild(cell(row.note));
+      tr.appendChild(cell(formatDate(row.createdAt)));
+      rsvpBody.appendChild(tr);
+    });
+  }
+
+  function renderWishes(rows) {
+    wishBody.textContent = '';
+    wishEmpty.hidden = rows.length > 0;
+    rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.appendChild(cell(row.name));
+      tr.appendChild(cell(row.message));
+      tr.appendChild(cell(formatDate(row.createdAt)));
+      wishBody.appendChild(tr);
+    });
+  }
+
+  function renderSummary(rsvps, wishes) {
+    const accepted = rsvps.filter((r) => r.attending === 'Joyfully Accepts').length;
+    const declined = rsvps.filter((r) => r.attending === 'Regretfully Declines').length;
+    const stats = [
+      ['RSVPs', rsvps.length],
+      ['Attending', accepted],
+      ['Declined', declined],
+      ['Messages', wishes.length]
+    ];
+    summaryEl.textContent = '';
+    stats.forEach(([label, value]) => {
+      const div = document.createElement('div');
+      div.className = 'stat';
+      const num = document.createElement('div');
+      num.className = 'stat-num';
+      num.textContent = String(value);
+      const lab = document.createElement('div');
+      lab.className = 'stat-label';
+      lab.textContent = label;
+      div.appendChild(num);
+      div.appendChild(lab);
+      summaryEl.appendChild(div);
+    });
+  }
+
+  async function loadData() {
+    const token = getToken();
+    rsvpCsvLink.href = '/api/admin/rsvps.csv?token=' + encodeURIComponent(token);
+    wishCsvLink.href = '/api/admin/wishes.csv?token=' + encodeURIComponent(token);
+    try {
+      const [rsvps, wishes] = await Promise.all([
+        fetchJson('/api/admin/rsvps'),
+        fetchJson('/api/admin/wishes')
+      ]);
+      renderSummary(rsvps, wishes);
+      renderRsvps(rsvps);
+      renderWishes(wishes);
+      showDashboard();
+    } catch (err) {
+      showLogin(err.message || 'Access denied. Check your token and try again.');
+    }
+  }
+
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = tokenInput.value.trim();
+    if (!value) return;
+    setToken(value);
+    tokenInput.value = '';
+    loadData();
+  });
+
+  signOutBtn.addEventListener('click', () => {
+    clearToken();
+    showLogin();
+  });
+
+  refreshBtn.addEventListener('click', loadData);
+
+  // Support bookmarking with /admin?token=... — read it once, store it,
+  // then strip it from the URL bar/history so the secret doesn't linger
+  // somewhere it could be shoulder-surfed, screenshotted, or shared.
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = params.get('token');
+  if (urlToken) {
+    setToken(urlToken);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  if (getToken()) {
+    loadData();
+  } else {
+    showLogin();
+  }
+})();

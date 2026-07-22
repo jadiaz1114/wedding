@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Jose &amp; Michelle</title>
+<style>
+  :root{
+    --ivory:#F8F3EA; --parchment:#EEE1C9; --forest:#5A4632; --forest-dark:#241C12;
+    --gold:#B08D57; --gold-light:#D8C39B; --bordeaux:#A0522D;
+    --line:rgba(90,70,50,0.22); --line-strong:rgba(90,70,50,0.4);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--ivory); color:var(--forest-dark); font-family:Georgia,'Times New Roman',serif; line-height:1.5;}
+  header{background:var(--forest-dark); color:var(--ivory); padding:20px 28px; display:flex; align-items:center; justify-content:space-between;}
+  header h1{font-size:19px; margin:0; font-weight:normal; letter-spacing:0.02em;}
+  header h1 em{font-style:italic; color:var(--gold-light);}
+  .container{max-width:980px; margin:0 auto; padding:36px 24px 80px;}
+
+  button, .btn{font-family:inherit; font-size:13px; letter-spacing:0.04em; cursor:pointer; border-radius:2px; padding:9px 16px; text-decoration:none; display:inline-block;}
+  .btn-solid{background:var(--forest); color:var(--ivory); border:1px solid var(--forest);}
+  .btn-solid:hover{background:var(--forest-dark);}
+  .btn-ghost{background:transparent; color:var(--forest); border:1px solid var(--line-strong);}
+  .btn-ghost:hover{background:var(--parchment);}
+
+  .login-card{max-width:380px; margin:60px auto; background:#fff; border:1px solid var(--line-strong); padding:32px; text-align:center;}
+  .login-card h2{margin:0 0 8px; font-weight:normal;}
+  .login-card p{color:#6b6155; font-size:14px; margin:0 0 20px;}
+  .login-card input{width:100%; padding:11px 12px; border:1px solid var(--line-strong); font-family:inherit; font-size:15px; margin-bottom:14px;}
+  .error{color:#B3261E; font-size:13px; margin-top:14px;}
+
+  .summary{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:40px;}
+  .stat{flex:1; min-width:120px; background:#fff; border:1px solid var(--line); padding:16px 18px; text-align:center;}
+  .stat-num{font-size:30px; color:var(--forest-dark);}
+  .stat-label{font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-top:4px;}
+
+  .panel-header{display:flex; align-items:center; justify-content:space-between; margin:36px 0 12px;}
+  .panel-header h2{font-weight:normal; margin:0; font-size:20px;}
+
+  .table-wrap{overflow-x:auto; border:1px solid var(--line);}
+  table{width:100%; border-collapse:collapse; font-size:14px; background:#fff;}
+  th, td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--forest); background:var(--parchment); white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .empty{color:#8a8071; font-style:italic; padding:16px 0;}
+
+  footer.actions{margin-top:40px; display:flex; justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Jose <em>&amp;</em> Michelle — Admin</h1>
+  <button id="signOutBtn" class="btn-ghost" hidden>Sign Out</button>
+</header>
+
+<main class="container">
+
+  <section id="loginView">
+    <div class="login-card">
+      <h2>Admin Access</h2>
+      <p>Enter the admin token from your server's <code>.env</code> file.</p>
+      <form id="loginForm">
+        <input type="password" id="tokenInput" placeholder="Admin token" autocomplete="off" required>
+        <button type="submit" class="btn-solid">View Responses</button>
+      </form>
+      <p id="loginError" class="error" role="alert" hidden></p>
+    </div>
+  </section>
+
+  <section id="dashboardView" hidden>
+    <div class="summary" id="summary"></div>
+
+    <div class="panel-header">
+      <h2>RSVPs</h2>
+      <a id="rsvpCsvLink" class="btn btn-ghost" href="#">Download CSV</a>
+    </div>
+    <div class="table-wrap">
+      <table id="rsvpTable">
+        <thead>
+          <tr><th>Name</th><th>Attending</th><th>Meal</th><th>Note</th><th>Submitted</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="rsvpEmpty" class="empty" hidden>No RSVPs yet.</p>
+
+    <div class="panel-header">
+      <h2>Love Messages</h2>
+      <a id="wishCsvLink" class="btn btn-ghost" href="#">Download CSV</a>
+    </div>
+    <div class="table-wrap">
+      <table id="wishTable">
+        <thead>
+          <tr><th>Name</th><th>Message</th><th>Submitted</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="wishEmpty" class="empty" hidden>No messages yet.</p>
+
+    <footer class="actions">
+      <button id="refreshBtn" class="btn btn-ghost">Refresh</button>
+    </footer>
+  </section>
+
+</main>
+
+<script src="/admin/app.js"></script>
+</body>
+</html>

@@ -212,6 +212,28 @@ app.get('/api/admin/wishes.csv', adminLimiter, requireAdmin, (req, res) => {
   res.send(toCsv(selectAllWishes.all()));
 });
 
+// JSON versions of the same data, for the /admin dashboard page.
+app.get('/api/admin/rsvps', adminLimiter, requireAdmin, (req, res) => {
+  res.json(selectAllRsvps.all());
+});
+
+app.get('/api/admin/wishes', adminLimiter, requireAdmin, (req, res) => {
+  res.json(selectAllWishes.all());
+});
+
+// The dashboard page itself holds no guest data — it's a static shell
+// that prompts for the admin token client-side and only then calls the
+// protected JSON endpoints above, so serving it needs no auth check.
+// It's also not linked from the public site and isn't served from the
+// static webroot, so guests have no path to it.
+app.get('/admin', readLimiter, (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+});
+
+app.get('/admin/app.js', readLimiter, (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'app.js'));
+});
+
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
 // eslint-disable-next-line no-unused-vars

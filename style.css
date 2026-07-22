@@ -180,6 +180,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hero-photo-fallback svg{width:120px; height:120px; opacity:.6;}
 
+/* Small decorative icons (rings, sparkles, a heart) drifting slowly
+   upward through the hero — purely ambient, so they sit behind the
+   text/monogram (z-index 1, vs hero-content's 2) and stop moving
+   under prefers-reduced-motion via the global rule near the top of
+   this file. */
+.hero-icons{position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none;}
+.hero-icon{
+  position:absolute; left:var(--x); bottom:-40px;
+  width:var(--size); height:auto;
+  color:var(--gold-light); opacity:0;
+  animation:heroFloat var(--dur) ease-in-out infinite;
+  animation-delay:var(--delay);
+}
+.hero-icon-sparkle-sm{color:var(--gold);}
+
+@keyframes heroFloat{
+  0%   { transform:translate(0,0); opacity:0; }
+  12%  { opacity:.5; }
+  50%  { transform:translate(16px,-58vh); }
+  88%  { opacity:.5; }
+  100% { transform:translate(-12px,-116vh); opacity:0; }
+}
+
 .hero-content{position:relative; z-index:2; text-align:center; color:var(--ivory); max-width:640px;}
 .hero-content .eyebrow{color:var(--gold-light);}
 .hero-crest-frame{
