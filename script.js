@@ -412,7 +412,7 @@ function initGodparentsRsvp(){
       return;
     }
 
-    status.textContent = 'With all our hearts, thank you for being our godparents \u2014 we can\u2019t wait to celebrate with you on January 30, 2027 at Casa Alva Resort!';
+    status.textContent = 'Thank you for accepting to be our godparents \u2014 see you soon on January 30, 2027!';
     form.reset();
   });
 }
