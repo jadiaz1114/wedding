@@ -26,6 +26,9 @@ wedding/
 │   ├── admin/                 ← /admin dashboard (served by server.js)
 │   │   ├── index.html
 │   │   └── app.js
+│   ├── guestlist/              ← /guestlist page (table #s + QR codes)
+│   │   ├── index.html
+│   │   └── app.js
 │   └── .env.example
 ├── deploy/                  ← Ubuntu deployment configs
 │   ├── nginx-wedding.conf
@@ -350,6 +353,35 @@ https://yourdomain.com/api/admin/rsvps.csv?token=YOUR_ADMIN_TOKEN
 https://yourdomain.com/api/admin/wishes.csv?token=YOUR_ADMIN_TOKEN
 https://yourdomain.com/api/admin/godparents.csv?token=YOUR_ADMIN_TOKEN
 ```
+
+## 10b. Guest list, seating QR codes, and the table "welcome" page
+
+Visit **`/guestlist`** (same `ADMIN_TOKEN` login as `/admin` — signing into
+one signs you into the other, same browser tab session) for a simpler view
+built around seating: every RSVP with its table number and, for each
+guest who's attending, a QR code you can preview and download.
+
+Print that QR on a place card or table assignment card. When a guest
+scans it, they land on a public page (`/table/<a random per-guest code>`,
+no login) that says "Welcome, `<their name>`," their table number, and the
+names of everyone else already assigned to that same table — a quick way
+for guests to see who they're sitting with. Guests who haven't been
+assigned a table yet just see a friendly "your table will be announced
+soon" message instead.
+
+A few things worth knowing:
+- Table numbers are still set from `/admin` (the **Table** column) — the
+  guest list here just displays them and generates the matching QR code.
+- Each guest's QR link uses a long random code, not their database ID, so
+  there's no way to guess your way from one guest's link to another's.
+  Nothing about it is indexed or discoverable — only someone who actually
+  has that specific QR code (i.e., holds the physical place card) can view
+  that page.
+- QR codes are generated on the fly, not stored as files — regenerate
+  anytime by reloading the page, and downloading one again always reflects
+  the guest's current name/table.
+- Guests marked "Regretfully Declines" show "Not attending" instead of a
+  QR code, since they won't need a place card.
 
 ## 11. Deploying updates later
 
