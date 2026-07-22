@@ -19,11 +19,11 @@
   </g>
 
   <path d="M 560 900 L 560 470 C 560 320, 660 210, 800 210 C 940 210, 1040 320, 1040 470 L 1040 900"
-        fill="none" stroke="url(#line)" stroke-width="1.5" opacity="0.55"/>
+        fill="none" stroke="url(#line)" stroke-width="1.5" opacity="0.42"/>
   <path d="M 600 900 L 600 480 C 600 345, 685 245, 800 245 C 915 245, 1000 345, 1000 480 L 1000 900"
-        fill="none" stroke="url(#line)" stroke-width="1" opacity="0.3"/>
+        fill="none" stroke="url(#line)" stroke-width="1" opacity="0.22"/>
 
-  <g stroke="url(#line)" stroke-width="1.4" fill="none" opacity="0.75">
+  <g stroke="url(#line)" stroke-width="1.4" fill="none" opacity="0.5">
     <path d="M800 214 C 780 200, 758 190, 733 186"/>
     <path d="M743 190 C 736 200, 734 208, 738 216"/>
     <path d="M758 187 C 751 197, 750 205, 755 213"/>
@@ -34,9 +34,9 @@
     <path d="M827 186 C 833 195, 834 202, 829 209"/>
   </g>
 
-  <circle cx="800" cy="330" r="42" fill="none" stroke="url(#line)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="800" cy="330" r="42" fill="none" stroke="url(#line)" stroke-width="1.2" opacity="0.38"/>
 
-  <g fill="none" stroke="url(#line)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.92">
+  <g fill="none" stroke="url(#line)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
     <circle cx="742" cy="560" r="26" />
     <path d="M700 900 L700 780 C700 700, 712 640, 742 610 C 772 640, 784 700, 784 780 L784 900" />
     <line x1="742" y1="610" x2="742" y2="720" stroke-width="1.4" opacity="0.6"/>
@@ -51,7 +51,7 @@
 
   <line x1="560" y1="900" x2="1040" y2="900" stroke="url(#line)" stroke-width="1" opacity="0.35"/>
 
-  <g fill="#D8C39B" opacity="0.5">
+  <g fill="#D8C39B" opacity="0.3">
     <circle cx="420" cy="220" r="2"/>
     <circle cx="1180" cy="260" r="2.2"/>
     <circle cx="1240" cy="600" r="1.6"/>

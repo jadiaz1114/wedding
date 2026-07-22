@@ -167,12 +167,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .hero-frame{position:absolute; inset:0;}
 .hero-photo{
   position:absolute; inset:0;
-  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, var(--rustic-brown-light) 0%, var(--forest-dark) 75%);
+  background:url('images/hero-sample.svg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, var(--rustic-brown-light) 0%, var(--forest-dark) 88%);
   /* EDIT: swap in your own photo — background-image:url('images/hero.jpg'); background-size:cover; background-position:center; */
 }
 .hero-photo::after{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(36,28,18,0.35) 0%, rgba(36,28,18,0.55) 60%, rgba(36,28,18,0.85) 100%);
+  background:linear-gradient(180deg, rgba(36,28,18,0.22) 0%, rgba(36,28,18,0.4) 60%, rgba(36,28,18,0.72) 100%);
 }
 .hero-photo-fallback{
   position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -180,11 +180,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hero-photo-fallback svg{width:120px; height:120px; opacity:.6;}
 
-/* Small decorative icons (rings, sparkles, a heart) drifting slowly
-   upward through the hero — purely ambient, so they sit behind the
+/* Small decorative icons (rings, a heart) drifting slowly upward
+   through the hero — purely ambient, so they sit behind the
    text/monogram (z-index 1, vs hero-content's 2) and stop moving
    under prefers-reduced-motion via the global rule near the top of
-   this file. */
+   this file. Kept slow and faint on purpose for a calm, unhurried feel. */
 .hero-icons{position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none;}
 .hero-icon{
   position:absolute; left:var(--x); bottom:-40px;
@@ -193,14 +193,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   animation:heroFloat var(--dur) ease-in-out infinite;
   animation-delay:var(--delay);
 }
-.hero-icon-sparkle-sm{color:var(--gold);}
 
 @keyframes heroFloat{
   0%   { transform:translate(0,0); opacity:0; }
-  12%  { opacity:.5; }
-  50%  { transform:translate(16px,-58vh); }
-  88%  { opacity:.5; }
-  100% { transform:translate(-12px,-116vh); opacity:0; }
+  15%  { opacity:.3; }
+  50%  { transform:translate(10px,-58vh); }
+  85%  { opacity:.3; }
+  100% { transform:translate(-8px,-116vh); opacity:0; }
 }
 
 .hero-content{position:relative; z-index:2; text-align:center; color:var(--ivory); max-width:640px;}
