@@ -454,7 +454,7 @@ app.get('/table/:token', readLimiter, (req, res) => {
 
   res.send(`<!doctype html><html lang="en"><head><title>Welcome, ${name} — Jose &amp; Michelle</title>${TABLE_PAGE_HEAD}</head>
 <body><div class="card">
-  <p class="eyebrow">Welcome</p>
+  <p class="eyebrow">Welcome to the Wedding of Jose &amp; Michelle</p>
   <h1>${name}</h1>
   ${body}
 </div></body></html>`);
