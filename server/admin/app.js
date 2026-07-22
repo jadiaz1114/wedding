@@ -19,10 +19,13 @@
   const summaryEl = document.getElementById('summary');
   const rsvpBody = document.querySelector('#rsvpTable tbody');
   const wishBody = document.querySelector('#wishTable tbody');
+  const godparentBody = document.querySelector('#godparentTable tbody');
   const rsvpEmpty = document.getElementById('rsvpEmpty');
   const wishEmpty = document.getElementById('wishEmpty');
+  const godparentEmpty = document.getElementById('godparentEmpty');
   const rsvpCsvLink = document.getElementById('rsvpCsvLink');
   const wishCsvLink = document.getElementById('wishCsvLink');
+  const godparentCsvLink = document.getElementById('godparentCsvLink');
 
   function getToken() {
     return sessionStorage.getItem(STORAGE_KEY) || '';
@@ -98,14 +101,28 @@
     });
   }
 
-  function renderSummary(rsvps, wishes) {
+  function renderGodparents(rows) {
+    godparentBody.textContent = '';
+    godparentEmpty.hidden = rows.length > 0;
+    rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.appendChild(cell(row.name));
+      tr.appendChild(cell(row.plusOne));
+      tr.appendChild(cell(row.message));
+      tr.appendChild(cell(formatDate(row.createdAt)));
+      godparentBody.appendChild(tr);
+    });
+  }
+
+  function renderSummary(rsvps, wishes, godparents) {
     const accepted = rsvps.filter((r) => r.attending === 'Joyfully Accepts').length;
     const declined = rsvps.filter((r) => r.attending === 'Regretfully Declines').length;
     const stats = [
       ['RSVPs', rsvps.length],
       ['Attending', accepted],
       ['Declined', declined],
-      ['Messages', wishes.length]
+      ['Messages', wishes.length],
+      ['Godparent RSVPs', godparents.length]
     ];
     summaryEl.textContent = '';
     stats.forEach(([label, value]) => {
@@ -127,14 +144,17 @@
     const token = getToken();
     rsvpCsvLink.href = '/api/admin/rsvps.csv?token=' + encodeURIComponent(token);
     wishCsvLink.href = '/api/admin/wishes.csv?token=' + encodeURIComponent(token);
+    godparentCsvLink.href = '/api/admin/godparents.csv?token=' + encodeURIComponent(token);
     try {
-      const [rsvps, wishes] = await Promise.all([
+      const [rsvps, wishes, godparents] = await Promise.all([
         fetchJson('/api/admin/rsvps'),
-        fetchJson('/api/admin/wishes')
+        fetchJson('/api/admin/wishes'),
+        fetchJson('/api/admin/godparents')
       ]);
-      renderSummary(rsvps, wishes);
+      renderSummary(rsvps, wishes, godparents);
       renderRsvps(rsvps);
       renderWishes(wishes);
+      renderGodparents(godparents);
       showDashboard();
     } catch (err) {
       showLogin(err.message || 'Access denied. Check your token and try again.');

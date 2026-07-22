@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Godparents &amp; Principal Sponsors RSVP — Jose &amp; Michelle</title>
+<meta name="description" content="RSVP for our godparents and principal sponsors.">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-src https://www.youtube.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="site-nav">
+  <a class="brand" href="/" aria-label="Back to main site">
+    <svg class="brand-crest" viewBox="0 0 60 60" aria-hidden="true">
+      <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="30" y="38" text-anchor="middle" class="brand-initials">J&amp;M</text>
+    </svg>
+    <span class="brand-text">Jose <em>&amp;</em> Michelle</span>
+  </a>
+</header>
+
+<!-- ================= GODPARENTS RSVP ================= -->
+<section class="section" id="godparents-rsvp" style="padding-top:160px;">
+  <div class="container narrow">
+    <p class="eyebrow center">With Gratitude</p>
+    <h1 class="section-title center">Godparents &amp; Principal Sponsors RSVP</h1>
+    <p class="section-lede center">We are honored to have you stand beside us as our principal sponsors. Please let us know if you'll be joining us and whether you'll bring a plus one.</p>
+
+    <form class="rsvp-form" id="godparentsForm" name="godparents" method="POST" action="/api/godparents">
+      <p class="hidden" hidden aria-hidden="true"><label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+      <div class="form-row">
+        <label for="gpName">Full Name</label>
+        <input type="text" name="name" id="gpName" required>
+      </div>
+
+      <fieldset class="form-row">
+        <legend>Will you bring a plus one?</legend>
+        <div class="radio-row">
+          <label><input type="radio" name="plusOne" value="Plus One" required> Plus One</label>
+          <label><input type="radio" name="plusOne" value="None" required> None</label>
+        </div>
+      </fieldset>
+
+      <div class="form-row">
+        <label for="gpMessage">Message for the Couple (optional)</label>
+        <textarea name="message" id="gpMessage" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-solid">Send RSVP</button>
+      <p class="form-status" id="godparentsStatus" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="hero-crest-frame footer-crest-frame">
+    <div class="hero-crest footer-crest" role="img" aria-label="J &amp; M monogram"></div>
+  </div>
+  <p class="footer-names">Jose &amp; Michelle</p>
+  <p class="footer-date">January 30, 2027</p>
+  <p class="footer-note">With all our love and gratitude for being part of our story.</p>
+</footer>
+
+<script src="/script.js"></script>
+</body>
+</html>

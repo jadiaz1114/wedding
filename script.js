@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSlideshowBooth();
   initWishWall();
   initRsvp();
+  initGodparentsRsvp();
   initCopyButtons();
   initBackgroundMusic();
 });
@@ -38,6 +39,7 @@ function initBackgroundMusic(){
 function initNav(){
   const toggle = document.getElementById('navToggle');
   const links = document.getElementById('navLinks');
+  if (!toggle || !links) return;
   toggle.addEventListener('click', () => {
     const open = links.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -368,6 +370,48 @@ function initRsvp(){
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
     renderTracker();
+    status.textContent = 'Thank you \u2014 your RSVP has been received!';
+    form.reset();
+  });
+}
+
+/* ---------------- GODPARENTS / PRINCIPAL SPONSORS RSVP ----------------
+   Separate, simpler RSVP for the /godparents page \u2014 just name, whether
+   they're bringing a plus one, and an optional message. Submits to the
+   self-hosted API at /api/godparents, stored in its own SQLite table.
+--------------------------------------------------------- */
+function initGodparentsRsvp(){
+  const form = document.getElementById('godparentsForm');
+  const status = document.getElementById('godparentsStatus');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const record = {
+      name: data.get('name'),
+      plusOne: data.get('plusOne'),
+      message: data.get('message'),
+      'bot-field': data.get('bot-field')
+    };
+    if (!record.name || !record.plusOne) return;
+
+    status.textContent = 'Sending...';
+    try {
+      const res = await fetch('/api/godparents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Request failed');
+      }
+    } catch (err) {
+      status.textContent = "Sorry, we couldn't send that just now. Please try again.";
+      return;
+    }
+
     status.textContent = 'Thank you \u2014 your RSVP has been received!';
     form.reset();
   });

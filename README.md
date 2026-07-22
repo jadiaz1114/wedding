@@ -18,9 +18,14 @@ wedding/
 ├── script.js            ← countdown, nav, slideshow, forms, lightbox
 ├── images/               ← put your photos here
 ├── song.mp3               ← background music
+├── godparents/             ← separate RSVP page for principal sponsors
+│   └── index.html
 ├── server/                 ← self-hosted RSVP/wishes API (Node + SQLite)
 │   ├── server.js
 │   ├── package.json
+│   ├── admin/                 ← /admin dashboard (served by server.js)
+│   │   ├── index.html
+│   │   └── app.js
 │   └── .env.example
 ├── deploy/                  ← Ubuntu deployment configs
 │   ├── nginx-wedding.conf
@@ -83,6 +88,12 @@ Both forms POST as JSON to a small API in `server/` (`/api/rsvp` and
 database (`server/data/wedding.db`). The Love Messages wall also fetches
 recent submissions from `/api/wishes` on page load, so messages guests leave
 are visible to every visitor, not just the one who submitted them.
+
+There's also a separate, simpler RSVP page at **`/godparents`** — for
+principal sponsors/godparents specifically, since they don't need the meal
+picker (just name, whether they're bringing a plus one, and an optional
+message). It posts to `/api/godparents` and stores into its own table, kept
+apart from the main guest RSVPs.
 
 This only works once the API is running — see Part B. While just opening
 `index.html` locally (no server), the forms will show a friendly "couldn't
@@ -306,11 +317,11 @@ https://yourdomain.com/admin
 ```
 
 This is a dashboard — not the RSVP/wishes forms guests use — showing a
-summary (attending/declined/message counts) and full tables of every RSVP
-and Love Message, with CSV download links for each. It's not linked from
-anywhere on the public site, and the page itself holds no guest data until
-you enter the token; nobody browsing the wedding site would ever land on
-it.
+summary (attending/declined/message/godparent-RSVP counts) and full tables
+of every RSVP, Love Message, and Godparent RSVP, with CSV download links
+for each. It's not linked from anywhere on the public site, and the page
+itself holds no guest data until you enter the token; nobody browsing the
+wedding site would ever land on it.
 
 Paste your `ADMIN_TOKEN` into the prompt to sign in (stored only for that
 browser tab session — closing the tab signs you out). For a one-click
@@ -328,6 +339,7 @@ The same endpoints it uses are available directly:
 ```
 https://yourdomain.com/api/admin/rsvps.csv?token=YOUR_ADMIN_TOKEN
 https://yourdomain.com/api/admin/wishes.csv?token=YOUR_ADMIN_TOKEN
+https://yourdomain.com/api/admin/godparents.csv?token=YOUR_ADMIN_TOKEN
 ```
 
 ## 11. Deploying updates later

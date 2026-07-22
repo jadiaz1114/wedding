@@ -46,6 +46,15 @@ db.exec(`
     ip TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS godparent_rsvps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    plus_one TEXT NOT NULL,
+    message TEXT,
+    ip TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 const insertRsvp = db.prepare(
@@ -53,6 +62,9 @@ const insertRsvp = db.prepare(
 );
 const insertWish = db.prepare(
   `INSERT INTO wishes (name, message, ip) VALUES (?, ?, ?)`
+);
+const insertGodparentRsvp = db.prepare(
+  `INSERT INTO godparent_rsvps (name, plus_one, message, ip) VALUES (?, ?, ?, ?)`
 );
 const selectRecentWishes = db.prepare(
   `SELECT name, message, created_at AS createdAt FROM wishes ORDER BY id DESC LIMIT ?`
@@ -62,6 +74,9 @@ const selectAllRsvps = db.prepare(
 );
 const selectAllWishes = db.prepare(
   `SELECT name, message, created_at AS createdAt FROM wishes ORDER BY id DESC`
+);
+const selectAllGodparentRsvps = db.prepare(
+  `SELECT name, plus_one AS plusOne, message, created_at AS createdAt FROM godparent_rsvps ORDER BY id DESC`
 );
 
 const app = express();
@@ -121,6 +136,7 @@ function clean(value, maxLen) {
 
 const ATTENDING_VALUES = new Set(['Joyfully Accepts', 'Regretfully Declines']);
 const MEAL_VALUES = new Set(['No Preference', 'Chicken', 'Beef', 'Fish', 'Vegetarian']);
+const PLUS_ONE_VALUES = new Set(['Plus One', 'None']);
 
 function isHoneypotTripped(body) {
   return clean(body['bot-field'], 200).length > 0;
@@ -146,6 +162,26 @@ app.post('/api/rsvp', checkOrigin, writeLimiter, (req, res) => {
   const safeMeal = MEAL_VALUES.has(meal) ? meal : 'No Preference';
 
   insertRsvp.run(name, attending, safeMeal, note, req.ip);
+
+  res.status(201).json({ ok: true });
+});
+
+app.post('/api/godparents', checkOrigin, writeLimiter, (req, res) => {
+  const body = req.body || {};
+
+  if (isHoneypotTripped(body)) {
+    return res.status(201).json({ ok: true });
+  }
+
+  const name = clean(body.name, 120);
+  const plusOne = clean(body.plusOne, 20);
+  const message = clean(body.message, 1000);
+
+  if (!name || !PLUS_ONE_VALUES.has(plusOne)) {
+    return res.status(400).json({ error: 'Please fill in your name and whether you will bring a plus one.' });
+  }
+
+  insertGodparentRsvp.run(name, plusOne, message, req.ip);
 
   res.status(201).json({ ok: true });
 });
@@ -212,6 +248,12 @@ app.get('/api/admin/wishes.csv', adminLimiter, requireAdmin, (req, res) => {
   res.send(toCsv(selectAllWishes.all()));
 });
 
+app.get('/api/admin/godparents.csv', adminLimiter, requireAdmin, (req, res) => {
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="godparent-rsvps.csv"');
+  res.send(toCsv(selectAllGodparentRsvps.all()));
+});
+
 // JSON versions of the same data, for the /admin dashboard page.
 app.get('/api/admin/rsvps', adminLimiter, requireAdmin, (req, res) => {
   res.json(selectAllRsvps.all());
@@ -219,6 +261,10 @@ app.get('/api/admin/rsvps', adminLimiter, requireAdmin, (req, res) => {
 
 app.get('/api/admin/wishes', adminLimiter, requireAdmin, (req, res) => {
   res.json(selectAllWishes.all());
+});
+
+app.get('/api/admin/godparents', adminLimiter, requireAdmin, (req, res) => {
+  res.json(selectAllGodparentRsvps.all());
 });
 
 // The dashboard page itself holds no guest data — it's a static shell
