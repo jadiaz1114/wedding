@@ -34,7 +34,11 @@ ProtectControlGroups=true
 RestrictSUIDSGID=true
 RestrictRealtime=true
 LockPersonality=true
-MemoryDenyWriteExecute=true
+# NOT MemoryDenyWriteExecute — Node's V8 engine needs to mark JIT-compiled
+# code pages writable-then-executable at runtime (see its baseline/Sparkplug
+# compiler). This option blocks exactly that via seccomp and makes Node
+# crash with a V8 fatal error ("Check failed: ... SetPermissions...") the
+# moment it JIT-compiles anything — a well-known Node/systemd incompatibility.
 
 [Install]
 WantedBy=multi-user.target
