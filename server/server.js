@@ -57,6 +57,14 @@ db.exec(`
   );
 `);
 
+// Migration: add table_number to rsvps if this DB predates it. SQLite has
+// no "ADD COLUMN IF NOT EXISTS", so check pragma table_info first — this
+// runs on every boot but is a no-op once the column exists.
+const rsvpColumns = db.prepare(`PRAGMA table_info(rsvps)`).all().map((c) => c.name);
+if (!rsvpColumns.includes('table_number')) {
+  db.exec(`ALTER TABLE rsvps ADD COLUMN table_number TEXT`);
+}
+
 const insertRsvp = db.prepare(
   `INSERT INTO rsvps (name, attending, meal, note, ip) VALUES (?, ?, ?, ?, ?)`
 );
@@ -70,7 +78,7 @@ const selectRecentWishes = db.prepare(
   `SELECT name, message, created_at AS createdAt FROM wishes ORDER BY id DESC LIMIT ?`
 );
 const selectAllRsvps = db.prepare(
-  `SELECT name, attending, meal, note, created_at AS createdAt FROM rsvps ORDER BY id DESC`
+  `SELECT id, name, attending, meal, note, table_number AS tableNumber, created_at AS createdAt FROM rsvps ORDER BY id DESC`
 );
 const selectAllWishes = db.prepare(
   `SELECT name, message, created_at AS createdAt FROM wishes ORDER BY id DESC`
@@ -78,6 +86,12 @@ const selectAllWishes = db.prepare(
 const selectAllGodparentRsvps = db.prepare(
   `SELECT name, plus_one AS plusOne, message, created_at AS createdAt FROM godparent_rsvps ORDER BY id DESC`
 );
+const updateRsvpTableNumber = db.prepare(
+  `UPDATE rsvps SET table_number = ? WHERE id = ?`
+);
+const deleteAllRsvps = db.prepare(`DELETE FROM rsvps`);
+const deleteAllWishes = db.prepare(`DELETE FROM wishes`);
+const deleteAllGodparentRsvps = db.prepare(`DELETE FROM godparent_rsvps`);
 
 const app = express();
 
@@ -265,6 +279,38 @@ app.get('/api/admin/wishes', adminLimiter, requireAdmin, (req, res) => {
 
 app.get('/api/admin/godparents', adminLimiter, requireAdmin, (req, res) => {
   res.json(selectAllGodparentRsvps.all());
+});
+
+app.patch('/api/admin/rsvps/:id/table', adminLimiter, requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid RSVP id.' });
+  }
+  const tableNumber = clean((req.body || {}).tableNumber, 20);
+  const info = updateRsvpTableNumber.run(tableNumber || null, id);
+  if (info.changes === 0) {
+    return res.status(404).json({ error: 'RSVP not found.' });
+  }
+  res.json({ ok: true, tableNumber });
+});
+
+// Delete-all is a hard, irreversible wipe of one table's guest data.
+// Gated the same as every other /api/admin/* route (ADMIN_TOKEN, rate
+// limited) — the DELETE method itself is also a mild CSRF deterrent,
+// since it can't be triggered by a plain link, image tag, or form post.
+app.delete('/api/admin/rsvps', adminLimiter, requireAdmin, (req, res) => {
+  const info = deleteAllRsvps.run();
+  res.json({ ok: true, deleted: info.changes });
+});
+
+app.delete('/api/admin/wishes', adminLimiter, requireAdmin, (req, res) => {
+  const info = deleteAllWishes.run();
+  res.json({ ok: true, deleted: info.changes });
+});
+
+app.delete('/api/admin/godparents', adminLimiter, requireAdmin, (req, res) => {
+  const info = deleteAllGodparentRsvps.run();
+  res.json({ ok: true, deleted: info.changes });
 });
 
 // The dashboard page itself holds no guest data — it's a static shell

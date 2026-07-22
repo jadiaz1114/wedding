@@ -323,6 +323,15 @@ for each. It's not linked from anywhere on the public site, and the page
 itself holds no guest data until you enter the token; nobody browsing the
 wedding site would ever land on it.
 
+Each RSVP row has an editable **Table** field — type a table number/name
+and click away (or press Enter) to save it; it shows up in the CSV export
+too, so you can hand a seating list to your coordinator.
+
+Each section also has a **Delete All** button, for wiping test submissions
+before the real event or clearing a section entirely. It asks you to
+confirm the exact count first, and cannot be undone — there's no separate
+backup unless you've set one up (see **Backing up the guest data** below).
+
 Paste your `ADMIN_TOKEN` into the prompt to sign in (stored only for that
 browser tab session — closing the tab signs you out). For a one-click
 bookmark instead, visit `https://yourdomain.com/admin?token=YOUR_ADMIN_TOKEN`

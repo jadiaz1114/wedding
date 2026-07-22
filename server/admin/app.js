@@ -26,6 +26,9 @@
   const rsvpCsvLink = document.getElementById('rsvpCsvLink');
   const wishCsvLink = document.getElementById('wishCsvLink');
   const godparentCsvLink = document.getElementById('godparentCsvLink');
+  const deleteRsvpsBtn = document.getElementById('deleteRsvpsBtn');
+  const deleteWishesBtn = document.getElementById('deleteWishesBtn');
+  const deleteGodparentsBtn = document.getElementById('deleteGodparentsBtn');
 
   function getToken() {
     return sessionStorage.getItem(STORAGE_KEY) || '';
@@ -75,6 +78,51 @@
     return isNaN(d) ? value : d.toLocaleString();
   }
 
+  function tableNumberCell(row) {
+    const td = document.createElement('td');
+    const wrap = document.createElement('div');
+    wrap.className = 'table-num-wrap';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'table-num-input';
+    input.placeholder = '—';
+    input.maxLength = 20;
+    input.value = row.tableNumber || '';
+
+    const status = document.createElement('span');
+    status.className = 'table-num-status';
+
+    let saved = input.value;
+    async function save() {
+      const value = input.value.trim();
+      if (value === saved) return;
+      status.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/admin/rsvps/' + row.id + '/table', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+          body: JSON.stringify({ tableNumber: value })
+        });
+        if (!res.ok) throw new Error();
+        saved = value;
+        status.textContent = 'Saved';
+        setTimeout(() => { if (status.textContent === 'Saved') status.textContent = ''; }, 1500);
+      } catch (err) {
+        status.textContent = 'Error';
+      }
+    }
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    });
+
+    wrap.appendChild(input);
+    wrap.appendChild(status);
+    td.appendChild(wrap);
+    return td;
+  }
+
   function renderRsvps(rows) {
     rsvpBody.textContent = '';
     rsvpEmpty.hidden = rows.length > 0;
@@ -84,6 +132,7 @@
       tr.appendChild(cell(row.attending));
       tr.appendChild(cell(row.meal));
       tr.appendChild(cell(row.note));
+      tr.appendChild(tableNumberCell(row));
       tr.appendChild(cell(formatDate(row.createdAt)));
       rsvpBody.appendChild(tr);
     });
@@ -176,6 +225,31 @@
   });
 
   refreshBtn.addEventListener('click', loadData);
+
+  async function deleteAll(button, label, endpoint) {
+    const count = document.querySelectorAll('#' + button.dataset.table + ' tbody tr').length;
+    const noun = count === 1 ? label.replace(/s$/, '') : label;
+    if (!confirm('Delete all ' + count + ' ' + noun + '? This cannot be undone.')) return;
+
+    button.disabled = true;
+    try {
+      const res = await fetch(endpoint, { method: 'DELETE', headers: { 'x-admin-token': getToken() } });
+      if (!res.ok) throw new Error();
+      await loadData();
+    } catch (err) {
+      alert('Something went wrong deleting ' + label + '. Please try again.');
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  deleteRsvpsBtn.dataset.table = 'rsvpTable';
+  deleteWishesBtn.dataset.table = 'wishTable';
+  deleteGodparentsBtn.dataset.table = 'godparentTable';
+
+  deleteRsvpsBtn.addEventListener('click', () => deleteAll(deleteRsvpsBtn, 'RSVPs', '/api/admin/rsvps'));
+  deleteWishesBtn.addEventListener('click', () => deleteAll(deleteWishesBtn, 'Love Messages', '/api/admin/wishes'));
+  deleteGodparentsBtn.addEventListener('click', () => deleteAll(deleteGodparentsBtn, 'Godparent RSVPs', '/api/admin/godparents'));
 
   // Support bookmarking with /admin?token=... — read it once, store it,
   // then strip it from the URL bar/history so the secret doesn't linger
