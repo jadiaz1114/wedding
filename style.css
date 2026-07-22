@@ -437,8 +437,8 @@ fieldset legend{font-family:var(--crest); font-size:11px; letter-spacing:0.1em; 
    FOOTER
    ========================================================== */
 .footer{background:var(--forest-dark); color:var(--ivory); text-align:center; padding:70px 24px;}
-.footer-crest-frame{width:90px; height:90px; margin:0 auto 18px;}
-.footer-crest{width:62px; height:62px;}
+.footer-crest-frame{width:140px; height:140px; margin:0 auto 18px;}
+.footer-crest{width:98px; height:98px;}
 .footer-names{font-family:var(--display); font-style:italic; font-size:28px; margin:0 0 6px;}
 .footer-date{font-family:var(--crest); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-light); margin:0 0 20px;}
 .footer-note{color:rgba(248,243,234,0.65); font-size:15px; margin:0;}

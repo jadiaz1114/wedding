@@ -412,7 +412,7 @@ function initGodparentsRsvp(){
       return;
     }
 
-    status.textContent = 'Thank you for accepting to be our godparents \u2014 see you soon on January 30, 2027!';
+    status.textContent = 'Thank you so much for agreeing to be our godparents \u2014 we can\u2019t wait to see you on January 30, 2027!';
     form.reset();
   });
 }
